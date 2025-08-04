@@ -34,7 +34,6 @@ func Migrate() {
 		end_time TIMESTAMPTZ,
 		round INT,
 		created_at TIMESTAMPTZ DEFAULT NOW()
-		
 	);
 
 	CREATE TABLE IF NOT EXISTS projects (
@@ -64,6 +63,8 @@ func Migrate() {
 		project_id TEXT REFERENCES projects(id) ON DELETE CASCADE,
 		dev_id TEXT REFERENCES devs(id) ON DELETE CASCADE
 	);
+	
+	ALTER TABLE missions ADD COLUMN IF NOT EXISTS description TEXT;
 	`
 
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"monad-indexer/internal/db"
 	"monad-indexer/internal/routes"
@@ -11,7 +10,7 @@ import (
 
 func main() {
 	db.InitDB()
-	defer db.Conn.Close(context.Background())
+	defer db.Conn.Close()
 
 	db.Migrate()
 

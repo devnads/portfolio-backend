@@ -6,14 +6,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
-var Conn *pgx.Conn
+var Conn *pgxpool.Pool
 
 func InitDB() {
-	// err := godotenv.Load("../../.env") LOCAL TEST
 	err := godotenv.Load("/home/ubuntu/.env")
 	if err != nil {
 		log.Println("Erreur reading .env file.")
@@ -21,10 +20,11 @@ func InitDB() {
 	}
 
 	url := os.Getenv("DB_URL")
-	conn, err := pgx.Connect(context.Background(),url )
+	pool, err := pgxpool.New(context.Background(), url)
 	if err != nil {
-		log.Fatal("DB connexion failed", err)
+		log.Fatal("DB pool connection failed:", err)
 	}
-	Conn = conn
-	fmt.Println("DB Connecté")
+
+	Conn = pool
+	fmt.Println("✅ DB Pool connecté")
 }

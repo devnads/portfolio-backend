@@ -20,10 +20,15 @@ func SetupRoutes() http.Handler {
 		r.With(middleware.IsAdmin).Post("/", handlers.CreateProject)
 	})
 
+	r.Route("/missions", func(r chi.Router) {
+		r.Get("/", handlers.GetAllMissions)
+		r.With(middleware.IsAdmin).Post("/", handlers.CreateMission)
+	})
+
 	// r.Route("/devs", func(r chi.Router) {
 	// 	r.With(middleware.IsAdmin).Post("/", handlers.CreateDev)
 		
-	// })
+	// })	
 
 	r.Get("/devs", handlers.GetAllDevs)
 

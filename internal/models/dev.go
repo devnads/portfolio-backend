@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type Dev struct {
 	ID string `json:"id"`
@@ -11,5 +14,5 @@ type Dev struct {
 	CreatedAt time.Time `json:"created_at"`
 	Discord string `json:"discord"`
 	Twitter string `json:"twitter"`
-	Github string `json:"github"`
+	Github sql.NullString `json:"github"`
 }

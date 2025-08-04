@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"monad-indexer/internal/db"
 	"monad-indexer/internal/models"
 	"net/http"
@@ -51,7 +52,7 @@ func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if name != "" {
-		query += `AND name = $` + fmt.Sprint(i) 
+		query += ` AND name = $` + fmt.Sprint(i) 
 		args = append(args, name)
 		i++
 	}
@@ -91,7 +92,8 @@ func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.Conn.Query(context.Background(), query, args...)
 	if err != nil {
-		http.Error(w,"DB Error", http.StatusInternalServerError)
+		log.Printf("❌ DB Error: %+v\n", err)
+		http.Error(w, "DB Error", http.StatusInternalServerError)
 		return
 	}
 
@@ -101,7 +103,27 @@ func GetAllProjects(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var project models.Project
-		rows.Scan(&project.ID, &project.DevID, &project.MissionID, &project.Name, &project.Image, &project.Categories, &project.Description, project.CreatedAt)
+		rows.Scan(&project.ID, &project.DevID, &project.MissionID, &project.Name, &project.Image, &project.Categories, &project.Description, &project.CreatedAt)
+		var dev models.Dev
+		err := db.Conn.QueryRow(context.Background(), "SELECT id, username, profile_image, roles, discord, twitter, address, github, created_at FROM devs WHERE id = $1", project.DevID).Scan(
+			&dev.ID, 
+			&dev.Username, 
+			&dev.ProfileImage, 
+			&dev.Roles, 
+			&dev.Discord, 
+			&dev.Twitter,
+			&dev.Address, 
+			&dev.Github,
+			&dev.CreatedAt,
+		)
+
+		if err != nil {
+			log.Printf("❌ DB Error: %+v\n", err)
+			http.Error(w, "DB Error", http.StatusInternalServerError)
+			return
+		}
+
+		project.Dev = dev
 		projects = append(projects, project)
 	}
 
@@ -118,9 +140,10 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 	
 	project.CreatedAt = time.Now()
 	_, err := db.Conn.Exec(context.Background(),
-		`INSERT INTO projects (name, creator_id, image, categories, description, created_at) VALUES ($1 $2 $3 $4 $5 $6)`,
-		&project.Name, &project.Image, &project.Categories, &project.Description, &project.CreatedAt,
+		`INSERT INTO projects (name, creator_id, image, categories, description, created_at) VALUES ($1, $2, $3, $4, $5, $6)`,
+		project.Name, project.DevID, project.Image, project.Categories, project.Description, project.CreatedAt,
 	)
+
 
 	if err != nil {
 		http.Error(w, "DB Error", http.StatusInternalServerError)

@@ -144,7 +144,6 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 		project.Name, project.DevID, project.Image, project.Categories, project.Description, project.CreatedAt,
 	)
 
-
 	if err != nil {
 		http.Error(w, "DB Error", http.StatusInternalServerError)
 		return
